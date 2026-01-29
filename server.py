@@ -26,11 +26,7 @@ from fastapi.responses import StreamingResponse, JSONResponse
 import tiktoken
 
 # Initialize tokenizer
-try:
-    ENCODER = tiktoken.get_encoding("cl100k_base")
-except Exception:
-    logger.warning("Could not load cl100k_base encoding, falling back to p50k_base")
-    ENCODER = tiktoken.get_encoding("p50k_base")
+ENCODER = tiktoken.get_encoding("cl100k_base")
 
 # Load environment variables
 load_dotenv()
@@ -39,7 +35,7 @@ load_dotenv()
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("server.log", encoding="utf-8", mode="w")],
+    handlers=[logging.FileHandler("server.log", encoding="utf-8", mode="a")],
 )
 logger = logging.getLogger(__name__)
 

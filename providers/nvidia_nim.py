@@ -147,6 +147,7 @@ class NvidiaNimProvider(BaseProvider):
 
                 if choice.get("finish_reason"):
                     finish_reason = choice["finish_reason"]
+                    logger.debug(f"NIM finish_reason: {finish_reason}")
 
                 # Handle reasoning content from delta
                 reasoning = extract_reasoning_from_delta(delta)
