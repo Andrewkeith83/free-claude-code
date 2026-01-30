@@ -372,33 +372,31 @@ class ClaudeMessageHandler:
         status: Optional[str] = None,
     ) -> str:
         """
-        Build unified message with specific order:
-        1. Thinking
-        2. Tools
-        3. Subagents
-        4. Content
-        5. Errors
-        6. Status (Bottom)
+        Build unified message with specific order.
+        Handles truncation while preserving markdown structure (closing code blocks).
         """
         lines = []
 
         # 1. Thinking
         if components["thinking"]:
-            full_thinking = "".join(components["thinking"])
-            display = full_thinking
-            if len(display) > 800:
-                display = display[:795] + "..."
-            lines.append(f"💭 **Thinking:**\n```\n{display}\n```")
+            thinking_text = "".join(components["thinking"])
+            # Truncate thinking if too long, it's usually less critical than final content
+            if len(thinking_text) > 1000:
+                thinking_text = thinking_text[:995] + "..."
+
+            # Ensure it doesn't break a code block if we eventually support them inside thinking
+            lines.append(f"💭 **Thinking:**\n```\n{thinking_text}\n```")
 
         # 2. Tools
         if components["tools"]:
             unique_tools = []
             seen = set()
             for t in components["tools"]:
-                if t not in seen:
-                    unique_tools.append(t)
+                if t and t not in seen:
+                    unique_tools.append(str(t))
                     seen.add(t)
-            lines.append(f"🛠 **Tools:** `{', '.join(unique_tools)}`")
+            if unique_tools:
+                lines.append(f"🛠 **Tools:** `{', '.join(unique_tools)}`")
 
         # 3. Subagents
         if components["subagents"]:
@@ -407,8 +405,7 @@ class ClaudeMessageHandler:
 
         # 4. Content
         if components["content"]:
-            full_content = "".join(components["content"])
-            lines.append(full_content)
+            lines.append("".join(components["content"]))
 
         # 5. Errors
         if components["errors"]:
@@ -420,13 +417,28 @@ class ClaudeMessageHandler:
             lines.append("")
             lines.append(status)
 
-        result = "\n".join(lines)
+        # Telegram character limit is 4096. We leave buffer for status updates.
+        LIMIT = 3900
 
-        # Truncate if too long (Telegram limit ~4096)
-        if len(result) > 3800:
-            result = "..." + result[-3795:]
+        status_text = f"\n\n{status}" if status else ""
+        main_text = "\n".join(lines[:-2] if status else lines)
 
-        return result
+        if len(main_text) + len(status_text) <= LIMIT:
+            return (
+                "\n".join([l for l in lines if l])
+                if not status
+                else "\n".join([l for l in lines[:-2] if l]) + status_text
+            )
+
+        # If too long, truncate the main content but keep the status and close code blocks
+        available_limit = LIMIT - len(status_text) - 20  # 20 for truncation marker
+        truncated_main = main_text[:available_limit] + "\n... (truncated)"
+
+        # Close any open code blocks
+        if truncated_main.count("```") % 2 != 0:
+            truncated_main += "\n```"
+
+        return truncated_main + status_text
 
     def _get_initial_status(
         self,

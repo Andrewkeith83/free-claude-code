@@ -147,6 +147,18 @@ class TelegramPlatform(MessagingPlatform):
             # In a real system, we might sleep, but for now we propagate or let the caller handle
             raise
         except TelegramError as e:
+            if "Can't parse entities" in str(e):
+                logger.warning(
+                    f"Markdown failed for message, falling back to plain text: {e}"
+                )
+                # Retry as plain text (no parse_mode)
+                msg = await self._application.bot.send_message(
+                    chat_id=chat_id,
+                    text=text,
+                    reply_to_message_id=int(reply_to) if reply_to else None,
+                    parse_mode=None,
+                )
+                return str(msg.message_id)
             logger.error(f"Telegram API Error: {e}")
             raise
 
@@ -174,6 +186,17 @@ class TelegramPlatform(MessagingPlatform):
         except TelegramError as e:
             if "Message is not modified" in str(e):
                 pass
+            elif "Can't parse entities" in str(e):
+                logger.warning(
+                    f"Markdown failed for edit, falling back to plain text: {e}"
+                )
+                # Retry as plain text
+                await self._application.bot.edit_message_text(
+                    chat_id=chat_id,
+                    message_id=int(message_id),
+                    text=text,
+                    parse_mode=None,
+                )
             else:
                 logger.error(f"Telegram Edit Error: {e}")
                 raise

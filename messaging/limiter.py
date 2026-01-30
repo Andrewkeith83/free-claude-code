@@ -93,7 +93,11 @@ class GlobalRateLimiter:
                             if not f.done():
                                 f.set_result(result)
                     except Exception as e:
-                        # Handle Telegram FloodWaitError specifically
+                        # Report error to all futures and log it
+                        for f in futures:
+                            if not f.done():
+                                f.set_exception(e)
+
                         error_msg = str(e).lower()
                         if "flood" in error_msg or "wait" in error_msg:
                             seconds = 30
@@ -103,20 +107,16 @@ class GlobalRateLimiter:
                             except:
                                 pass
 
-                            logger.error(f"FloodWait detected! Pausing for {seconds}s")
+                            logger.error(
+                                f"FloodWait detected! Pausing worker for {seconds}s"
+                            )
                             self._paused_until = (
                                 asyncio.get_event_loop().time() + seconds
                             )
-
-                            # Re-queue the tasks at the front (as a high priority update)
-                            await self._enqueue_internal_multi(
-                                func, futures, dedup_key, front=True
-                            )
-                            await asyncio.sleep(seconds)
                         else:
-                            for f in futures:
-                                if not f.done():
-                                    f.set_exception(e)
+                            logger.error(
+                                f"Error in limiter worker for key {dedup_key}: {e}"
+                            )
             except asyncio.CancelledError:
                 break
             except Exception as e:
@@ -171,4 +171,13 @@ class GlobalRateLimiter:
             dedup_key = f"task_{id(func)}_{asyncio.get_event_loop().time()}"
 
         future = asyncio.get_event_loop().create_future()
-        asyncio.create_task(self._enqueue_internal(func, future, dedup_key))
+
+        async def _wrapped():
+            try:
+                return await self._enqueue_internal(func, future, dedup_key)
+            except Exception as e:
+                logger.error(f"Error in fire_and_forget for key {dedup_key}: {e}")
+                if not future.done():
+                    future.set_exception(e)
+
+        asyncio.create_task(_wrapped())
