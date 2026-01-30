@@ -46,6 +46,7 @@ name = "cc-nim"
 version = "2.0.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "cryptg" },
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "pydantic" },
@@ -67,6 +68,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cryptg", specifier = ">=0.5.2" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.11" },
     { name = "httpx", specifier = ">=0.25.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
@@ -307,6 +309,52 @@ wheels = [
 [package.optional-dependencies]
 toml = [
     { name = "tomli", marker = "python_full_version <= '3.11'" },
+]
+
+[[package]]
+name = "cryptg"
+version = "0.5.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/41/e0/d1b637d638513191793971b985151b48ac656d5fcce79771f1e5541a7acf/cryptg-0.5.2.tar.gz", hash = "sha256:d1577e219d040695f34ae7c2636c9ed769fe623813009e27dbc735beed69bd16", size = 13347, upload-time = "2025-10-12T08:39:51.185Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bf/c6/7752a958e7fe98fab72f5c0859e95cb8d84c986f47558c23a20c64c74913/cryptg-0.5.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:bbabe74b321415d5dbea58a30ef96ba53a196de57dd48c876266e0304ddaeb5d", size = 213724, upload-time = "2025-10-12T08:56:53.325Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/38/e40268c87f2ed6eb38983508d5657cdce18d8a35b173986c7e98cf33b750/cryptg-0.5.2-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:928264608c721032d407541fb2e6119a6e5b5d87d8ee244de5a68263301fcad7", size = 243529, upload-time = "2025-10-12T08:56:54.897Z" },
+    { url = "https://files.pythonhosted.org/packages/61/18/780ecaeb290c34122d0c98f5a0089ad2163e323689d0c0ca88d1c1789599/cryptg-0.5.2-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:f05d56fe5aef63e3fcfc76714d41fb2b2378730551a455dd615d0fdd49fd9037", size = 255276, upload-time = "2025-10-12T08:56:55.965Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/4a/835d3e816a3187932bffc595c339ccea15c1063f7e8f27b65bbcaf2819d3/cryptg-0.5.2-cp310-cp310-win32.whl", hash = "sha256:c6806680964cad8723d110228fcf1cbdb40eebfbd19e91e4f55ebf48ce95a223", size = 112783, upload-time = "2025-10-12T08:56:57.281Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/20/eb3deb01237ba751b6c2c117c2ee4be0596ccd87d5dfbff4305b88df7783/cryptg-0.5.2-cp310-cp310-win_amd64.whl", hash = "sha256:195a9f5f1a834ad8ac9989dcf95563f37e0332d734c64b4150e99cdb71f0bb53", size = 113641, upload-time = "2025-10-12T08:56:58.435Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/88/050a378998d9f14b88955d5e3119b0d5822830e42376ff69023c12a4108e/cryptg-0.5.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:40e6002f3dd522711b33fd8ace2424f295dd557251d255c6f0ab1cd7a6f8c662", size = 213527, upload-time = "2025-10-12T08:56:59.6Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/82/c977ae8906bed76b068e25ba70fecb7f8f79ba43be13a290a55ee527ee19/cryptg-0.5.2-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:ef778055445d451b4467cda4252a23cb659666012b97c43cce25d08b55f8fb4a", size = 243025, upload-time = "2025-10-12T08:57:00.71Z" },
+    { url = "https://files.pythonhosted.org/packages/21/4e/fdd0ca11105c02dc7879f6df6e7b0f7ce7e85a262938d3f9657d450ba102/cryptg-0.5.2-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:682b19897ebef8a910fdfe5fc379689334fdc197cb17bb13763f27153c856cb2", size = 255120, upload-time = "2025-10-12T08:57:02.016Z" },
+    { url = "https://files.pythonhosted.org/packages/02/04/f4834326b0aaff222a35f4b138fed51d5619627c2bd02c94a08f7ab6df21/cryptg-0.5.2-cp311-cp311-win32.whl", hash = "sha256:e83a0c9f141af8fe426c9967cec802ab01e207edb6aeb3fb8f0d94f9fbb76b92", size = 112529, upload-time = "2025-10-12T08:57:03.349Z" },
+    { url = "https://files.pythonhosted.org/packages/22/de/edf6d5bcee436b5e3c764f25486c646fe47f5e18cdc0fad37bc6b4d96ab5/cryptg-0.5.2-cp311-cp311-win_amd64.whl", hash = "sha256:b677d8e3be717c740a05eaf042e92e6f3e0f07dd3383bc4b1878b71cf4048d84", size = 113574, upload-time = "2025-10-12T08:57:04.773Z" },
+    { url = "https://files.pythonhosted.org/packages/81/ea/4752cbd74369a27662960d9476918e549590ad91b68e911fffd106695dc7/cryptg-0.5.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:eb28fcde47e02421926dbb83dbb0793d21d783125b95bda68414e46c76b1c9e1", size = 211666, upload-time = "2025-10-12T08:57:05.671Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/ad/4873a1ecd602aed7618bcf2dce4099834c73423b4793bbe815b942ab67d2/cryptg-0.5.2-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:5f51de5fa87cca9c3b2c019eae0ba7f4a27fd0ac23a6b52970e14ab6e590c11f", size = 243573, upload-time = "2025-10-12T08:57:07.062Z" },
+    { url = "https://files.pythonhosted.org/packages/34/2e/50fda8d43646db4be92071979722600440f852e70eda67379a55b686a376/cryptg-0.5.2-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:207c6c717c5e2d544f11523ce8c56982e40fbfc4b3a6eebf70e3e7b37c2be14e", size = 255038, upload-time = "2025-10-12T08:57:08.336Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/bf/e7fcb0887a8ec340b2f28a54dd2105b271e7574ae99eb1222bb8cb85cebc/cryptg-0.5.2-cp312-cp312-win32.whl", hash = "sha256:3c0c1edd348bbbebc5a6fd553cdeb861d85016c73dd5dfc368a0bee343a6fb25", size = 113108, upload-time = "2025-10-12T08:57:09.387Z" },
+    { url = "https://files.pythonhosted.org/packages/02/a7/54c2a6f3559708a04023f31407628d6db3e2482b059b226dc3f4c41ffbe1/cryptg-0.5.2-cp312-cp312-win_amd64.whl", hash = "sha256:c9b6ae5d30c3c164ac44b6b212887ed7d56f55e2fb207c7f93332ef2624fd936", size = 113710, upload-time = "2025-10-12T08:57:10.284Z" },
+    { url = "https://files.pythonhosted.org/packages/a3/94/194f349abbef5c8b9d4a940a24e0063e75341a4b649222d6f18c8e6be2e6/cryptg-0.5.2-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:78256ecd112b16e2f2bd7b74bfce9b79068cb2304f3a7e847a2440908f780c36", size = 211720, upload-time = "2025-10-12T08:57:11.533Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/19/9fb12ec6f5f257c318a181f3127615c52ac03274a70a1078fd2ceb180742/cryptg-0.5.2-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:62cc487da7f842362619a839cf13e27cc7f59b4870f3dcbb58c3dd71649322e9", size = 243713, upload-time = "2025-10-12T08:57:12.481Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/28/1d55ecf9b058dc9376758aa71df83715bc6fe84eb6cf85a0af1c50345016/cryptg-0.5.2-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:1797c006ac9d4ddd08f141fc6718e16040eabca8defb6bdf7ded5946359aa375", size = 255031, upload-time = "2025-10-12T08:57:13.779Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/e9/57698ae2af522ac86d1af5b0788ceab07c92313201dea082eb1b6f6abb54/cryptg-0.5.2-cp313-cp313-win32.whl", hash = "sha256:8c0e9a58c8db6795e674130bbc0c055a0eff887075707e6b6285f6f52581442b", size = 113165, upload-time = "2025-10-12T08:57:14.683Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/3c/276e1034a93160a8908a61043b74fef028b8275f9b0cccb0353e48729e1d/cryptg-0.5.2-cp313-cp313-win_amd64.whl", hash = "sha256:5dc1e0c39a243710773b834dc8880182bba6a0ff8da4ba7cd2a53c67e70dfa4e", size = 114024, upload-time = "2025-10-12T08:57:15.545Z" },
+    { url = "https://files.pythonhosted.org/packages/80/7e/b8d7d30484c48fbb7b8d6262052b7bb05fd40b6dd14e044af3624fe2d2f2/cryptg-0.5.2-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:b57ca6c19dbd59eb2dd72d3ca289621b8f06db1073704dc9ac6fba2fbad7b782", size = 211427, upload-time = "2025-10-12T08:57:16.764Z" },
+    { url = "https://files.pythonhosted.org/packages/86/e8/e30eee6f18d5a2f916f4c18d2625dc305df1d9ca08195fa629c46cba1b53/cryptg-0.5.2-cp314-cp314-manylinux_2_28_aarch64.whl", hash = "sha256:a4475a567bf728b85a5c0399f487ec1e683bfb4a5dad9c3f4e771be1caa712fb", size = 243269, upload-time = "2025-10-12T08:57:17.823Z" },
+    { url = "https://files.pythonhosted.org/packages/97/6c/cb0332af4c790f8912abffe5559fc4ffbf71a4471310b8f979cb4eb6429d/cryptg-0.5.2-cp314-cp314-manylinux_2_28_x86_64.whl", hash = "sha256:bffb88636f2d00f8773bb6ae5d90e9963ce2e4dc49d4d108e813ed75ad2fb4c0", size = 254464, upload-time = "2025-10-12T08:57:19.164Z" },
+    { url = "https://files.pythonhosted.org/packages/71/87/a95fc0c1d4f7ccb5c2069b7b54f72d1471042d7922008a0d50b99db84951/cryptg-0.5.2-cp314-cp314-win32.whl", hash = "sha256:721dfb2cd109a89e28d9bb3da892c56b16983cc59cf9b2268bacf94bd4d5abf3", size = 116303, upload-time = "2025-10-12T08:57:20.13Z" },
+    { url = "https://files.pythonhosted.org/packages/71/83/0eb334c3fb563d74a061ee49a568f2cd392f4e0e83c35b67d8fd3111d1ef/cryptg-0.5.2-cp314-cp314-win_amd64.whl", hash = "sha256:9269ad512124dd4a41824ab5dcc0a8e6697f8aa8f5fcd71fb34f8a4eebd5ec67", size = 116433, upload-time = "2025-10-12T08:57:20.966Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/f6/d49eecfbf76150fadfea6b778f396b22b3d779262697cdd94ade7701943a/cryptg-0.5.2-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:cc0e519e31b61633305ffd34803da3ea5c3414221a838ae85b487bcdee71a388", size = 211163, upload-time = "2025-10-12T08:57:21.838Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/ae/251f130b1bd2a54b2345b24a72ec6b69b3798c6bc55e880292f83db78928/cryptg-0.5.2-cp314-cp314t-manylinux_2_28_aarch64.whl", hash = "sha256:b67ce4d22532454aceac6c5afc30ba2cefb4b95fcfe74eea9affdb697fe59cc1", size = 243212, upload-time = "2025-10-12T08:57:22.814Z" },
+    { url = "https://files.pythonhosted.org/packages/a5/1f/8bdda38d198cb8d459909599702361eb49db95c1a182be1b52b08db569cb/cryptg-0.5.2-cp314-cp314t-manylinux_2_28_x86_64.whl", hash = "sha256:4e2273d41eb8d3be60e190f0ae30c1492db41b6a49d4d3e769f9ba24da4402f5", size = 254612, upload-time = "2025-10-12T08:57:23.792Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/dd/70a10daab5d276a5f1fe5fe500446cff247e2082b971ae07d240a418d1a8/cryptg-0.5.2-cp314-cp314t-win32.whl", hash = "sha256:427ee363344a71882a3ba853c179b1d7d1ed0991e4fa8cf09e6f7418eda86237", size = 115715, upload-time = "2025-10-12T08:57:24.869Z" },
+    { url = "https://files.pythonhosted.org/packages/41/48/f691dc55e4001482120886a84f6db0161c7b1d9e96343203f93d5ec530ca/cryptg-0.5.2-cp314-cp314t-win_amd64.whl", hash = "sha256:ce37d3634b56f5cacc8419f1f907589fee89bd8e2a37aa208a2f0eed32773da3", size = 116271, upload-time = "2025-10-12T08:57:26.048Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/3f/1e3881853448cd32c5f94987603cfaac270713d1d749eea1a78d6eece4c1/cryptg-0.5.2-pp310-pypy310_pp73-macosx_11_0_arm64.whl", hash = "sha256:fdbeea1fb061b5a7bc273f6c6ed40cd7b7a05600305d4a8f7002c29b2555c95c", size = 215198, upload-time = "2025-10-12T08:57:39.044Z" },
+    { url = "https://files.pythonhosted.org/packages/59/03/5d5d64a3f74595d8258b52ac934041a1dc24a046c9e9d7d8dff3b3938601/cryptg-0.5.2-pp310-pypy310_pp73-manylinux_2_28_aarch64.whl", hash = "sha256:08b15f841691fc71735aeace24107c0975c3a0e8806e65762492c961013d6e5d", size = 244530, upload-time = "2025-10-12T08:57:40.224Z" },
+    { url = "https://files.pythonhosted.org/packages/94/16/f06e91ebd2023271f8fa272ec0e80d32085640b071cc4107a70feb51344e/cryptg-0.5.2-pp310-pypy310_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:ee0d1c5371c34f31ec1bf0fba3c86257b5f19cf8e1411138ebc771e21509bd6a", size = 255904, upload-time = "2025-10-12T08:57:41.272Z" },
+    { url = "https://files.pythonhosted.org/packages/44/41/133bbb63e58669f60349429782c67f309520a01f373326c87adc981a52c5/cryptg-0.5.2-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:11d3b512db21905d8b26bc1493ee45bbc73e3dd285cbb412539c05e256cd46aa", size = 114494, upload-time = "2025-10-12T08:57:42.266Z" },
+    { url = "https://files.pythonhosted.org/packages/2e/64/0526cc46968630cd2e4f6637c83431a47296bb2c2d80cda0fcf779b365d5/cryptg-0.5.2-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:7da6a02027684c1c56d8e3a13a2341ec2fc67792036ed356dcc54bd08fdee485", size = 214875, upload-time = "2025-10-12T08:57:43.152Z" },
+    { url = "https://files.pythonhosted.org/packages/58/e9/62042808e99bbb09896c57e047a317851595ac0c45d79ceed8a98254ac72/cryptg-0.5.2-pp311-pypy311_pp73-manylinux_2_28_aarch64.whl", hash = "sha256:973e67117296bf0ad4dc21607fd699d9da3b95d66f6f39d981b522523e778f3f", size = 244198, upload-time = "2025-10-12T08:57:44.139Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/05/80feec5026430371208e0d53ca642b4706a59678590319890bbddb6dfe5a/cryptg-0.5.2-pp311-pypy311_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:74a6416ebff5af10f0d837c2790a55086efe3ae5115c0da50948d0c95f144c03", size = 255576, upload-time = "2025-10-12T08:57:45.094Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/d9/35f820588f581e5fbd5392abd299c08effde9184ed4b766d67b06e67f780/cryptg-0.5.2-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:bd2ea1261454ac415e4127a5bf3f4795bd404c9f1041bf98cf02a7e23ff253b7", size = 114253, upload-time = "2025-10-12T08:57:46.376Z" },
 ]
 
 [[package]]
