@@ -162,3 +162,34 @@ class MyProvider(BaseProvider):
         # Convert to Anthropic response format
         pass
 ```
+
+### Adding Your Own Messaging App
+
+Extend `MessagingPlatform` in `messaging/` to add support for other platforms (Discord, Slack, etc.):
+
+```python
+from messaging.base import MessagingPlatform
+from messaging.models import IncomingMessage
+
+class MyPlatform(MessagingPlatform):
+    async def start(self):
+        # Initialize connection
+        pass
+
+    async def stop(self):
+        # Cleanup
+        pass
+
+    async def queue_send_message(self, chat_id, text, **kwargs):
+        # Send message to platform
+        pass
+
+    async def queue_edit_message(self, chat_id, message_id, text, **kwargs):
+        # Edit existing message
+        pass
+
+    def on_message(self, handler):
+        # Register callback for incoming messages
+        # Handler expects an IncomingMessage object
+        pass
+```
