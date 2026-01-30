@@ -1,4 +1,5 @@
 import pytest
+import asyncio
 import os
 import sys
 
@@ -59,7 +60,14 @@ def mock_platform():
     platform.edit_message = AsyncMock()
     platform.queue_send_message = AsyncMock(return_value="msg_123")
     platform.queue_edit_message = AsyncMock()
-    platform.fire_and_forget = MagicMock()
+
+    def _fire_and_forget(task):
+        if asyncio.iscoroutine(task):
+            # Create a task to avoid "coroutine was never awaited" warning
+            return asyncio.create_task(task)
+        return None
+
+    platform.fire_and_forget = MagicMock(side_effect=_fire_and_forget)
     return platform
 
 
