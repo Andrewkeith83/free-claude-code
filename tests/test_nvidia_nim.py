@@ -106,6 +106,25 @@ async def test_build_request_body_with_tools(nim_provider):
 
 
 @pytest.mark.asyncio
+async def test_build_request_body_deepseek(nim_provider):
+    """Test request body with DeepSeek model."""
+    req = MockRequest(model="deepseek-ai/deepseek-r1")
+    body = nim_provider._build_request_body(req)
+
+    assert "chat_template_kwargs" in body
+    assert body["chat_template_kwargs"] == {"thinking": True}
+
+
+@pytest.mark.asyncio
+async def test_build_request_body_non_deepseek(nim_provider):
+    """Test request body with non-DeepSeek model."""
+    req = MockRequest(model="meta/llama-3.3-70b-instruct")
+    body = nim_provider._build_request_body(req)
+
+    assert "chat_template_kwargs" not in body
+
+
+@pytest.mark.asyncio
 async def test_stream_response_text(nim_provider):
     """Test streaming text response."""
     # Mock stream response

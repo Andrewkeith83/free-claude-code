@@ -94,6 +94,10 @@ class NvidiaNimProvider(BaseProvider):
             extra_body.setdefault("thinking", {"type": "enabled"})
             extra_body.setdefault("reasoning_split", True)
 
+        # Handle DeepSeek-specific thinking mode
+        if "deepseek" in request_data.model.lower():
+            extra_body.setdefault("chat_template_kwargs", {"thinking": True})
+
         body.update(extra_body)
 
         # Apply NIM defaults

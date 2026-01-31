@@ -96,6 +96,10 @@ class RequestBuilderMixin:
             extra_body.setdefault("thinking", {"type": "enabled"})
             extra_body.setdefault("reasoning_split", True)
 
+        # Handle DeepSeek-specific thinking mode
+        if "deepseek" in request_data.model.lower():
+            extra_body.setdefault("chat_template_kwargs", {"thinking": True})
+
         body.update(extra_body)
 
         # Apply NIM defaults
@@ -191,9 +195,7 @@ class ResponseConverterMixin:
                 if not reasoning:
                     think_content, raw_content = extract_think_content(raw_content)
                     if think_content:
-                        content.append(
-                            {"type": "thinking", "thinking": think_content}
-                        )
+                        content.append({"type": "thinking", "thinking": think_content})
                 if raw_content:
                     content.append({"type": "text", "text": raw_content})
             elif isinstance(raw_content, list):
