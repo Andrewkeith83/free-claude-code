@@ -67,18 +67,33 @@ class ThinkTagParser:
     def _parse_outside_think(self) -> Optional[ContentChunk]:
         """Parse content outside think tags."""
         think_start = self._buffer.find(self.OPEN_TAG)
+        orphan_close = self._buffer.find(self.CLOSE_TAG)
+
+        # Handle orphan </think> - strip it (Step Fun AI sends reasoning via
+        # reasoning_content but may leak closing tags in content)
+        if orphan_close != -1 and (think_start == -1 or orphan_close < think_start):
+            pre_orphan = self._buffer[:orphan_close]
+            self._buffer = self._buffer[orphan_close + self.CLOSE_TAG_LEN :]
+            if pre_orphan:
+                return ContentChunk(ContentType.TEXT, pre_orphan)
+            # Continue parsing after stripping orphan tag
+            return self._parse_outside_think()
 
         if think_start == -1:
             # No tag found - check for partial tag at end
-            # We buffer any trailing '<' and subsequent characters that could be part of <think>
+            # We buffer any trailing '<' and subsequent characters that could be part of <think> or </think>
             last_bracket = self._buffer.rfind("<")
-            if (
-                last_bracket != -1
-                and len(self._buffer) - last_bracket < self.OPEN_TAG_LEN
-            ):
-                # Check if the partial string could be the start of <think>
+            if last_bracket != -1:
                 potential_tag = self._buffer[last_bracket:]
-                if self.OPEN_TAG.startswith(potential_tag):
+                tag_len = len(potential_tag)
+                # Check if could be partial <think> or </think>
+                if (
+                    tag_len < self.OPEN_TAG_LEN
+                    and self.OPEN_TAG.startswith(potential_tag)
+                ) or (
+                    tag_len < self.CLOSE_TAG_LEN
+                    and self.CLOSE_TAG.startswith(potential_tag)
+                ):
                     emit = self._buffer[:last_bracket]
                     self._buffer = self._buffer[last_bracket:]
                     if emit:

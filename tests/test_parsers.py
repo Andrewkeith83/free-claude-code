@@ -223,3 +223,82 @@ def test_text_between_params_lost():
     assert "text1" in filtered
     assert "text2" in filtered
     assert tools[0]["input"] == {"a": "1", "b": "2"}
+
+
+# --- Orphan </think> Tag Tests (Step Fun AI compatibility) ---
+
+
+def test_orphan_close_tag_stripped():
+    """Orphan </think> without opening tag should be stripped."""
+    parser = ThinkTagParser()
+    chunks = list(parser.feed("Hello </think> world"))
+
+    # Should get one text chunk with orphan tag stripped
+    assert len(chunks) == 2
+    assert chunks[0].type == ContentType.TEXT
+    assert chunks[0].content == "Hello "
+    assert chunks[1].type == ContentType.TEXT
+    assert chunks[1].content == " world"
+
+
+def test_orphan_close_tag_at_start():
+    """Orphan </think> at start should be stripped."""
+    parser = ThinkTagParser()
+    chunks = list(parser.feed("</think>Hello world"))
+
+    assert len(chunks) == 1
+    assert chunks[0].type == ContentType.TEXT
+    assert chunks[0].content == "Hello world"
+
+
+def test_orphan_close_tag_at_end():
+    """Orphan </think> at end should be stripped."""
+    parser = ThinkTagParser()
+    chunks = list(parser.feed("Hello world</think>"))
+
+    assert len(chunks) == 1
+    assert chunks[0].type == ContentType.TEXT
+    assert chunks[0].content == "Hello world"
+
+
+def test_multiple_orphan_close_tags():
+    """Multiple orphan </think> tags should all be stripped."""
+    parser = ThinkTagParser()
+    chunks = list(parser.feed("a</think>b</think>c"))
+
+    text = "".join(c.content for c in chunks if c.type == ContentType.TEXT)
+    assert text == "abc"
+    assert "</think>" not in text
+
+
+def test_orphan_close_tag_streaming():
+    """Orphan </think> split across chunks should be stripped."""
+    parser = ThinkTagParser()
+
+    # Feed partial orphan tag
+    chunks1 = list(parser.feed("Hello </thi"))
+    assert len(chunks1) == 1
+    assert chunks1[0].content == "Hello "
+
+    # Complete the orphan tag
+    chunks2 = list(parser.feed("nk> world"))
+    assert len(chunks2) == 1
+    assert chunks2[0].type == ContentType.TEXT
+    assert chunks2[0].content == " world"
+
+
+def test_orphan_close_with_valid_think_pair():
+    """Orphan </think> followed by valid <think>...</think> pair."""
+    parser = ThinkTagParser()
+    chunks = list(parser.feed("a</think>b<think>thinking</think>c"))
+
+    types = [c.type for c in chunks]
+    contents = [c.content for c in chunks]
+
+    assert ContentType.TEXT in types
+    assert ContentType.THINKING in types
+    # Text should be "ab" and "c", thinking should be "thinking"
+    text_content = "".join(c.content for c in chunks if c.type == ContentType.TEXT)
+    think_content = "".join(c.content for c in chunks if c.type == ContentType.THINKING)
+    assert text_content == "abc"
+    assert think_content == "thinking"
