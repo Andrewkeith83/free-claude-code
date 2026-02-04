@@ -7,25 +7,9 @@ while maintaining full traceability through request IDs and content hashes.
 import hashlib
 import json
 import logging
-import os
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
-
-# Separate debug file handler for full payloads
-_debug_handler: Optional[logging.FileHandler] = None
-
-
-def _get_debug_handler() -> logging.FileHandler:
-    """Get or create the debug file handler."""
-    global _debug_handler
-    if _debug_handler is None:
-        _debug_handler = logging.FileHandler(
-            "server_debug.jsonl", encoding="utf-8", mode="w"
-        )
-        _debug_handler.setLevel(logging.DEBUG)
-    return _debug_handler
 
 
 def generate_request_fingerprint(messages: List[Any]) -> str:
@@ -75,7 +59,7 @@ def get_last_user_message_preview(messages: List[Any], max_len: int = 100) -> st
     return "(no user message)"
 
 
-def get_tool_names(tools: Optional[List[Any]], max_count: int = 5) -> List[str]:
+def get_tool_names(tools: List[Any] | None, max_count: int = 5) -> List[str]:
     """Extract tool names from tool list, limiting to max_count."""
     if not tools:
         return []
@@ -122,25 +106,13 @@ def build_request_summary(request_data: Any) -> Dict[str, Any]:
     }
 
 
-def log_full_payload(request_id: str, payload: Dict[str, Any]) -> None:
-    """Write full payload to separate debug file for forensic analysis.
-
-    Only writes if LOG_FULL_PAYLOADS env var is set to 'true'.
-    """
-    if os.getenv("LOG_FULL_PAYLOADS", "false").lower() != "true":
-        return
-
-    try:
-        handler = _get_debug_handler()
-        record = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "request_id": request_id,
-            "payload": payload,
-        }
-        handler.stream.write(json.dumps(record, default=str) + "\n")
-        handler.stream.flush()
-    except Exception as e:
-        logger.warning(f"Failed to write debug payload: {e}")
+def log_full_payload(
+    logger_instance: logging.Logger, request_id: str, payload: Dict[str, Any]
+) -> None:
+    """Log full payload to the standard logger."""
+    logger_instance.debug(
+        f"FULL_PAYLOAD [{request_id}]: {json.dumps(payload, default=str)}"
+    )
 
 
 def log_request_compact(
@@ -152,19 +124,18 @@ def log_request_compact(
     """Log a compact request summary with fingerprint for correlation.
 
     This is the main entry point for logging requests. It logs a single-line
-    JSON summary to the main log and optionally writes full payload to debug file.
+    JSON summary to the main log and always writes full payload.
     """
     summary = build_request_summary(request_data)
     summary["request_id"] = request_id
 
     logger_instance.info(f"{prefix}: {json.dumps(summary)}")
 
-    # Optionally write full payload to debug file
-    if os.getenv("LOG_FULL_PAYLOADS", "false").lower() == "true":
-        try:
-            payload = (
-                request_data.model_dump() if hasattr(request_data, "model_dump") else {}
-            )
-            log_full_payload(request_id, payload)
-        except Exception as e:
-            logger.debug(f"Could not dump request data: {e}")
+    # Always log full payload
+    try:
+        payload = (
+            request_data.model_dump() if hasattr(request_data, "model_dump") else {}
+        )
+        log_full_payload(logger_instance, request_id, payload)
+    except Exception as e:
+        logger.debug(f"Could not dump request data: {e}")

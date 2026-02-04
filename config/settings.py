@@ -29,9 +29,6 @@ class Settings(BaseSettings):
     # ==================== Fast Prefix Detection ====================
     fast_prefix_detection: bool = True
 
-    # ==================== Logging ====================
-    log_full_payloads: bool = False
-
     # ==================== Optimizations ====================
     enable_network_probe_mock: bool = True
     enable_title_generation_skip: bool = True
