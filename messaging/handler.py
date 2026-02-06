@@ -20,6 +20,34 @@ from .event_parser import parse_cli_event
 logger = logging.getLogger(__name__)
 
 
+MDV2_SPECIAL_CHARS = set("\\_*[]()~`>#+-=|{}.!")
+
+
+def escape_md_v2(text: str) -> str:
+    """Escape text for Telegram MarkdownV2."""
+    return "".join(f"\\{ch}" if ch in MDV2_SPECIAL_CHARS else ch for ch in text)
+
+
+def escape_md_v2_code(text: str) -> str:
+    """Escape text for Telegram MarkdownV2 code spans/blocks."""
+    return text.replace("\\", "\\\\").replace("`", "\\`")
+
+
+def mdv2_bold(text: str) -> str:
+    return f"*{escape_md_v2(text)}*"
+
+
+def mdv2_code_inline(text: str) -> str:
+    return f"`{escape_md_v2_code(text)}`"
+
+
+def format_status(emoji: str, label: str, suffix: Optional[str] = None) -> str:
+    base = f"{emoji} {mdv2_bold(label)}"
+    if suffix:
+        return f"{base} {escape_md_v2(suffix)}"
+    return base
+
+
 class ClaudeMessageHandler:
     """
     Platform-agnostic handler for Claude interactions.
@@ -137,8 +165,8 @@ class ClaudeMessageHandler:
             await self.platform.queue_edit_message(
                 incoming.chat_id,
                 status_msg_id,
-                f"📋 **Queued** (position {queue_size}) - waiting...",
-                parse_mode="markdown",
+                format_status("📋", "Queued", f"(position {queue_size}) - waiting..."),
+                parse_mode="MarkdownV2",
             )
 
     async def _process_node(
@@ -191,7 +219,7 @@ class ClaudeMessageHandler:
             if display and display != last_displayed_text:
                 last_displayed_text = display
                 await self.platform.queue_edit_message(
-                    chat_id, status_msg_id, display, parse_mode="markdown"
+                    chat_id, status_msg_id, display, parse_mode="MarkdownV2"
                 )
 
         try:
@@ -210,7 +238,7 @@ class ClaudeMessageHandler:
                     captured_session_id = session_or_temp_id
             except RuntimeError as e:
                 components["errors"].append(str(e))
-                await update_ui("⏳ **Session limit reached**", force=True)
+                await update_ui(format_status("⏳", "Session limit reached"), force=True)
                 if tree:
                     await tree.update_state(
                         node_id, MessageState.ERROR, error_message=str(e)
@@ -249,28 +277,28 @@ class ClaudeMessageHandler:
                 for parsed in parsed_list:
                     if parsed["type"] == "thinking":
                         components["thinking"].append(parsed["text"])
-                        await update_ui("🧠 **Claude is thinking...**")
+                        await update_ui(format_status("🧠", "Claude is thinking..."))
 
                     elif parsed["type"] == "content":
                         if parsed.get("text"):
                             components["content"].append(parsed["text"])
-                            await update_ui("🧠 **Claude is working...**")
+                        await update_ui(format_status("🧠", "Claude is working..."))
 
                     elif parsed["type"] == "tool_start":
                         names = [t.get("name") for t in parsed.get("tools", [])]
                         components["tools"].extend(names)
-                        await update_ui("⏳ **Executing tools...**")
+                        await update_ui(format_status("⏳", "Executing tools..."))
 
                     elif parsed["type"] == "subagent_start":
                         tasks = parsed.get("tasks", [])
                         components["subagents"].extend(tasks)
-                        await update_ui("🤖 **Subagent working...**")
+                        await update_ui(format_status("🤖", "Subagent working..."))
 
                     elif parsed["type"] == "complete":
                         if not any(components.values()):
                             components["content"].append("Done.")
                         logger.info("HANDLER: Task complete, updating UI")
-                        await update_ui("✅ **Complete**", force=True)
+                        await update_ui(format_status("✅", "Complete"), force=True)
 
                         # Update node state and session
                         if tree and captured_session_id:
@@ -288,7 +316,7 @@ class ClaudeMessageHandler:
                         )
                         components["errors"].append(error_msg)
                         logger.info("HANDLER: Updating UI with error status")
-                        await update_ui("❌ **Error**", force=True)
+                        await update_ui(format_status("❌", "Error"), force=True)
                         if tree:
                             await self._propagate_error_to_children(
                                 node_id, error_msg, "Parent task failed"
@@ -297,7 +325,7 @@ class ClaudeMessageHandler:
         except asyncio.CancelledError:
             logger.warning(f"HANDLER: Task cancelled for node {node_id}")
             components["errors"].append("Task was cancelled")
-            await update_ui("❌ **Cancelled**", force=True)
+            await update_ui(format_status("❌", "Cancelled"), force=True)
             if tree:
                 await self._propagate_error_to_children(
                     node_id, "Cancelled by user", "Parent task was stopped"
@@ -308,7 +336,7 @@ class ClaudeMessageHandler:
             )
             error_msg = str(e)[:200]
             components["errors"].append(error_msg)
-            await update_ui("💥 **Task Failed**", force=True)
+            await update_ui(format_status("💥", "Task Failed"), force=True)
             if tree:
                 await self._propagate_error_to_children(
                     node_id, error_msg, "Parent task failed"
@@ -334,8 +362,8 @@ class ClaudeMessageHandler:
                 self.platform.queue_edit_message(
                     child.incoming.chat_id,
                     child.status_message_id,
-                    f"❌ **Cancelled:** {child_status_text}",
-                    parse_mode="markdown",
+                    format_status("❌", "Cancelled:", child_status_text),
+                    parse_mode="MarkdownV2",
                 )
             )
 
@@ -357,7 +385,9 @@ class ClaudeMessageHandler:
             if len(thinking_text) > 1000:
                 thinking_text = "..." + thinking_text[-995:]
 
-            lines.append(f"💭 **Thinking:**\n```\n{thinking_text}\n```")
+            lines.append(
+                f"💭 {mdv2_bold('Thinking:')}\n```\n{escape_md_v2_code(thinking_text)}\n```"
+            )
 
         # 2. Tools
         if components["tools"]:
@@ -368,24 +398,26 @@ class ClaudeMessageHandler:
                     unique_tools.append(str(t))
                     seen.add(t)
             if unique_tools:
-                lines.append(f"🛠 **Tools:** `{', '.join(unique_tools)}`")
+                lines.append(
+                    f"🛠 {mdv2_bold('Tools:')} {mdv2_code_inline(', '.join(unique_tools))}"
+                )
 
         # 3. Subagents
         if components["subagents"]:
             for task in components["subagents"]:
-                lines.append(f"🤖 **Subagent:** `{task}`")
+                lines.append(f"🤖 {mdv2_bold('Subagent:')} {mdv2_code_inline(task)}")
 
         # 4. Content
         if components["content"]:
-            lines.append("".join(components["content"]))
+            lines.append(escape_md_v2("".join(components["content"])))
 
         # 5. Errors
         if components["errors"]:
             for err in components["errors"]:
-                lines.append(f"⚠️ **Error:** `{err}`")
+                lines.append(f"⚠️ {mdv2_bold('Error:')} {mdv2_code_inline(err)}")
 
         if not any(lines) and not status:
-            return "⏳ **Claude is working...**"
+            return format_status("⏳", "Claude is working...")
 
         # Telegram character limit is 4096. We leave buffer for status updates.
         LIMIT = 3900
@@ -400,7 +432,7 @@ class ClaudeMessageHandler:
             return (
                 main_text + status_text
                 if main_text + status_text
-                else "⏳ **Claude is working...**"
+                else format_status("⏳", "Claude is working...")
             )
 
         # If too long, truncate the start of the content (keep the end)
@@ -408,7 +440,7 @@ class ClaudeMessageHandler:
         raw_truncated = main_text[-available_limit:].lstrip()
 
         # Check for unbalanced code blocks
-        prefix = "... (truncated)\n"
+        prefix = escape_md_v2("... (truncated)\n")
         if raw_truncated.count("```") % 2 != 0:
             prefix += "```\n"
 
@@ -426,14 +458,20 @@ class ClaudeMessageHandler:
             # Reply to existing tree
             if self.tree_queue.is_node_tree_busy(parent_node_id):
                 queue_size = self.tree_queue.get_queue_size(parent_node_id) + 1
-                return f"📋 **Queued** (position {queue_size}) - waiting..."
-            return "🔄 **Continuing conversation...**"
+                return format_status(
+                    "📋", "Queued", f"(position {queue_size}) - waiting..."
+                )
+            return format_status("🔄", "Continuing conversation...")
 
         # New conversation
         stats = self.cli_manager.get_stats()
         if stats["active_sessions"] >= stats["max_sessions"]:
-            return f"⏳ **Waiting for slot...** ({stats['active_sessions']}/{stats['max_sessions']})"
-        return "⏳ **Launching new Claude CLI instance...**"
+            return format_status(
+                "⏳",
+                "Waiting for slot...",
+                f"({stats['active_sessions']}/{stats['max_sessions']})",
+            )
+        return format_status("⏳", "Launching new Claude CLI instance...")
 
     async def stop_all_tasks(self) -> int:
         """
@@ -459,8 +497,8 @@ class ClaudeMessageHandler:
                 self.platform.queue_edit_message(
                     node.incoming.chat_id,
                     node.status_message_id,
-                    "⏹ **Stopped.**",
-                    parse_mode="markdown",
+                    format_status("⏹", "Stopped."),
+                    parse_mode="MarkdownV2",
                 )
             )
 
@@ -476,7 +514,7 @@ class ClaudeMessageHandler:
         count = await self.stop_all_tasks()
         await self.platform.queue_send_message(
             incoming.chat_id,
-            f"⏹ **Stopped.** Cancelled {count} pending or active requests.",
+            format_status("⏹", "Stopped.", f"Cancelled {count} pending or active requests."),
         )
 
     async def _handle_stats_command(self, incoming: IncomingMessage) -> None:
@@ -485,5 +523,12 @@ class ClaudeMessageHandler:
         tree_count = self.tree_queue.get_tree_count()
         await self.platform.queue_send_message(
             incoming.chat_id,
-            f"📊 **Stats**\n• Active CLI: {stats['active_sessions']}\n• Max CLI: {stats['max_sessions']}\n• Message Trees: {tree_count}",
+            "📊 "
+            + mdv2_bold("Stats")
+            + "\n"
+            + escape_md_v2(f"• Active CLI: {stats['active_sessions']}")
+            + "\n"
+            + escape_md_v2(f"• Max CLI: {stats['max_sessions']}")
+            + "\n"
+            + escape_md_v2(f"• Message Trees: {tree_count}"),
         )

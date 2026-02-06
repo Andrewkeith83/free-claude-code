@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from messaging.telegram import TelegramPlatform
 from telegram.error import NetworkError, RetryAfter, TelegramError
-from messaging.handler import ClaudeMessageHandler
+from messaging.handler import ClaudeMessageHandler, format_status
 
 
 @pytest.fixture
@@ -85,7 +85,7 @@ def test_handler_build_message_hardening():
         "errors": [],
     }
     msg = handler._build_message(components)
-    assert msg == "⏳ **Claude is working...**"
+    assert msg == format_status("⏳", "Claude is working...")
 
     # Case 2: Truncation with code block closing
     long_thinking = "thought " * 200  # ~1400 chars

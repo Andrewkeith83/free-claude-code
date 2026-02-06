@@ -19,6 +19,13 @@ from .models import IncomingMessage
 
 logger = logging.getLogger(__name__)
 
+# Telegram MarkdownV2 escaping for inline strings.
+MDV2_SPECIAL_CHARS = set("\\_*[]()~`>#+-=|{}.!")
+
+
+def escape_md_v2(text: str) -> str:
+    return "".join(f"\\{ch}" if ch in MDV2_SPECIAL_CHARS else ch for ch in text)
+
 # Optional import - python-telegram-bot may not be installed
 try:
     from telegram import Update, Bot
@@ -132,8 +139,13 @@ class TelegramPlatform(MessagingPlatform):
         try:
             target = self.allowed_user_id
             if target:
+                startup_text = (
+                    f"🚀 *{escape_md_v2('Claude Code Proxy is online!')}* "
+                    f"{escape_md_v2('(Bot API)')}"
+                )
                 await self.send_message(
-                    target, "🚀 **Claude Code Proxy is online!** (Bot API)"
+                    target,
+                    startup_text,
                 )
         except Exception as e:
             logger.warning(f"Could not send startup message: {e}")
@@ -201,52 +213,52 @@ class TelegramPlatform(MessagingPlatform):
         chat_id: str,
         text: str,
         reply_to: Optional[str] = None,
-        parse_mode: Optional[str] = "Markdown",
+        parse_mode: Optional[str] = "MarkdownV2",
     ) -> str:
         """Send a message to a chat."""
         if not self._application or not self._application.bot:
             raise RuntimeError("Telegram application or bot not initialized")
 
-        async def _do_send(mode=parse_mode):
+        async def _do_send(parse_mode=parse_mode):
             bot = self._application.bot  # type: ignore
             msg = await bot.send_message(
                 chat_id=chat_id,
                 text=text,
                 reply_to_message_id=int(reply_to) if reply_to else None,
-                parse_mode=mode,
+                parse_mode=parse_mode,
             )
             return str(msg.message_id)
 
-        return await self._with_retry(_do_send)
+        return await self._with_retry(_do_send, parse_mode=parse_mode)
 
     async def edit_message(
         self,
         chat_id: str,
         message_id: str,
         text: str,
-        parse_mode: Optional[str] = "Markdown",
+        parse_mode: Optional[str] = "MarkdownV2",
     ) -> None:
         """Edit an existing message."""
         if not self._application or not self._application.bot:
             raise RuntimeError("Telegram application or bot not initialized")
 
-        async def _do_edit(mode=parse_mode):
+        async def _do_edit(parse_mode=parse_mode):
             bot = self._application.bot  # type: ignore
             await bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=int(message_id),
                 text=text,
-                parse_mode=mode,
+                parse_mode=parse_mode,
             )
 
-        await self._with_retry(_do_edit)
+        await self._with_retry(_do_edit, parse_mode=parse_mode)
 
     async def queue_send_message(
         self,
         chat_id: str,
         text: str,
         reply_to: Optional[str] = None,
-        parse_mode: Optional[str] = "Markdown",
+        parse_mode: Optional[str] = "MarkdownV2",
         fire_and_forget: bool = True,
     ) -> Optional[str]:
         """Enqueue a message to be sent (using limiter)."""
@@ -268,7 +280,7 @@ class TelegramPlatform(MessagingPlatform):
         chat_id: str,
         message_id: str,
         text: str,
-        parse_mode: Optional[str] = "Markdown",
+        parse_mode: Optional[str] = "MarkdownV2",
         fire_and_forget: bool = True,
     ) -> None:
         """Enqueue a message edit."""
@@ -355,8 +367,9 @@ class TelegramPlatform(MessagingPlatform):
             try:
                 await self.send_message(
                     chat_id,
-                    f"❌ **Error:** {str(e)[:200]}",
+                    f"❌ *{escape_md_v2('Error:')}* {escape_md_v2(str(e)[:200])}",
                     reply_to=incoming.message_id,
+                    parse_mode="MarkdownV2",
                 )
             except Exception:
                 pass

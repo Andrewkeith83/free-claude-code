@@ -49,7 +49,10 @@ async def test_telegram_platform_send_message_success(telegram_platform):
 
     assert msg_id == "999"
     mock_bot.send_message.assert_called_once_with(
-        chat_id="chat_1", text="hello", reply_to_message_id=None, parse_mode="Markdown"
+        chat_id="chat_1",
+        text="hello",
+        reply_to_message_id=None,
+        parse_mode="MarkdownV2",
     )
 
 
@@ -62,7 +65,7 @@ async def test_telegram_platform_edit_message_success(telegram_platform):
     await telegram_platform.edit_message("chat_1", "999", "new text")
 
     mock_bot.edit_message_text.assert_called_once_with(
-        chat_id="chat_1", message_id=999, text="new text", parse_mode="Markdown"
+        chat_id="chat_1", message_id=999, text="new text", parse_mode="MarkdownV2"
     )
 
 

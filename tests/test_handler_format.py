@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from messaging.handler import ClaudeMessageHandler
+from messaging.handler import ClaudeMessageHandler, escape_md_v2
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def test_build_message_structure(handler):
         "content": ["Here is the file content."],
         "errors": ["Some error happened"],
     }
-    status = "✅ **Complete**"
+    status = "✅ *Complete*"
 
     msg = handler._build_message(components, status)
 
@@ -31,23 +31,23 @@ def test_build_message_structure(handler):
     assert "list_files" in msg
     assert "read_file" in msg
     assert "Searching codebase..." in msg
-    assert "Here is the file content." in msg
+    assert escape_md_v2("Here is the file content.") in msg
     assert "Some error happened" in msg
-    assert "✅ **Complete**" in msg
+    assert "✅ *Complete*" in msg
 
     # Check headers
-    assert "💭 **Thinking:**" in msg
-    assert "🛠 **Tools:**" in msg
-    assert "🤖 **Subagent:**" in msg
-    assert "⚠️ **Error:**" in msg
+    assert "💭 *Thinking:*" in msg
+    assert "🛠 *Tools:*" in msg
+    assert "🤖 *Subagent:*" in msg
+    assert "⚠️ *Error:*" in msg
 
     # Check Order: Thinking -> Tools -> Subagents -> Content -> Errors -> Status
     p_thinking = msg.find("Thinking process...")
-    p_tools = msg.find("🛠 **Tools:**")
-    p_subagents = msg.find("🤖 **Subagent:**")
-    p_content = msg.find("Here is the file content.")
-    p_errors = msg.find("⚠️ **Error:**")
-    p_status = msg.find("✅ **Complete**")
+    p_tools = msg.find("🛠 *Tools:*")
+    p_subagents = msg.find("🤖 *Subagent:*")
+    p_content = msg.find(escape_md_v2("Here is the file content."))
+    p_errors = msg.find("⚠️ *Error:*")
+    p_status = msg.find("✅ *Complete*")
 
     assert p_thinking < p_tools, "Thinking should come before Tools"
     assert p_tools < p_subagents, "Tools should come before Subagents"
@@ -67,7 +67,7 @@ def test_build_message_simple(handler):
     }
     msg = handler._build_message(components, "Ready")
 
-    assert "Simple message." in msg
+    assert escape_md_v2("Simple message.") in msg
     assert "Ready" in msg
     assert "💭" not in msg
     assert "🛠" not in msg
@@ -84,5 +84,5 @@ def test_subagents_formatting(handler):
     }
     msg = handler._build_message(components)
 
-    assert "🤖 **Subagent:** `Task 1`" in msg
-    assert "🤖 **Subagent:** `Task 2`" in msg
+    assert "🤖 *Subagent:* `Task 1`" in msg
+    assert "🤖 *Subagent:* `Task 2`" in msg

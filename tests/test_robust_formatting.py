@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from messaging.handler import ClaudeMessageHandler
+from messaging.handler import ClaudeMessageHandler, escape_md_v2
 
 
 @pytest.fixture
@@ -25,13 +25,13 @@ def test_truncation_closes_code_blocks(handler):
         "errors": [],
     }
 
-    msg = handler._build_message(components, "✅ **Complete**")
+    msg = handler._build_message(components, "✅ *Complete*")
 
-    assert "... (truncated)" in msg
+    assert escape_md_v2("... (truncated)") in msg
     # The limit is 3900. Our content + thinking is > 4000.
     # The backtick count must be even to be a valid block.
     assert msg.count("```") % 2 == 0
-    assert msg.endswith("```") or "✅ **Complete**" in msg.split("```")[-1]
+    assert msg.endswith("```") or "✅ *Complete*" in msg.split("```")[-1]
 
 
 def test_truncation_preserves_status(handler):
@@ -47,7 +47,7 @@ def test_truncation_preserves_status(handler):
     msg = handler._build_message(components, status)
 
     assert status in msg
-    assert "... (truncated)" in msg
+    assert escape_md_v2("... (truncated)") in msg
 
 
 def test_empty_components_with_status(handler):

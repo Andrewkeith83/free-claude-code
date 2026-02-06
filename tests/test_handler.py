@@ -22,7 +22,8 @@ async def test_handle_message_stop_command(
 
     handler.stop_all_tasks.assert_called_once()
     mock_platform.queue_send_message.assert_called_once_with(
-        incoming.chat_id, "⏹ **Stopped.** Cancelled 5 pending or active requests."
+        incoming.chat_id,
+        "⏹ *Stopped\\.* Cancelled 5 pending or active requests\\.",
     )
 
 
@@ -97,12 +98,12 @@ async def test_handle_message_queued(handler, mock_platform, incoming_message_fa
 
         await handler.handle_message(incoming)
 
-        mock_platform.queue_edit_message.assert_called_once_with(
-            incoming.chat_id,
-            "status_123",
-            "📋 **Queued** (position 3) - waiting...",
-            parse_mode="markdown",
-        )
+    mock_platform.queue_edit_message.assert_called_once_with(
+        incoming.chat_id,
+        "status_123",
+        "📋 *Queued* \\(position 3\\) \\- waiting\\.\\.\\.",
+        parse_mode="MarkdownV2",
+    )
 
 
 @pytest.mark.asyncio
@@ -177,7 +178,7 @@ async def test_process_node_success_flow(handler, mock_cli_manager, mock_platfor
         # Note: update_ui is debounced, but COMPLETED/ERROR/CANCELLED are forced
         mock_platform.queue_edit_message.assert_called()
         last_call = mock_platform.queue_edit_message.call_args_list[-1]
-        assert "✅ **Complete**" in last_call[0][2]
+        assert "✅ *Complete*" in last_call[0][2]
         assert "Hello world" in last_call[0][2]
 
 
@@ -216,5 +217,5 @@ async def test_process_node_error_flow(handler, mock_cli_manager, mock_platform)
         )
 
         last_call = mock_platform.queue_edit_message.call_args_list[-1]
-        assert "❌ **Error**" in last_call[0][2]
+        assert "❌ *Error*" in last_call[0][2]
         assert "CLI crashed" in last_call[0][2]
