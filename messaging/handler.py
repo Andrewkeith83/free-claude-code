@@ -246,7 +246,8 @@ class ClaudeMessageHandler:
         self.cli_manager = cli_manager
         self.session_store = session_store
         self.tree_queue = TreeQueueManager(
-            queue_update_callback=self._update_queue_positions
+            queue_update_callback=self._update_queue_positions,
+            node_started_callback=self._mark_node_processing,
         )
 
     async def handle_message(self, incoming: IncomingMessage) -> None:
@@ -375,6 +376,20 @@ class ClaudeMessageHandler:
                     parse_mode="MarkdownV2",
                 )
             )
+
+    async def _mark_node_processing(self, tree: MessageTree, node_id: str) -> None:
+        """Update the dequeued node's status to processing immediately."""
+        node = tree.get_node(node_id)
+        if not node or node.state == MessageState.ERROR:
+            return
+        self.platform.fire_and_forget(
+            self.platform.queue_edit_message(
+                node.incoming.chat_id,
+                node.status_message_id,
+                format_status("🔄", "Processing..."),
+                parse_mode="MarkdownV2",
+            )
+        )
 
     async def _process_node(
         self,

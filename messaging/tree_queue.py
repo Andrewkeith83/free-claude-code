@@ -41,9 +41,15 @@ class TreeQueueManager:
         queue_update_callback: Optional[
             Callable[[MessageTree], Awaitable[None]]
         ] = None,
+        node_started_callback: Optional[
+            Callable[[MessageTree, str], Awaitable[None]]
+        ] = None,
     ):
         self._repository = TreeRepository()
-        self._processor = TreeQueueProcessor(queue_update_callback)
+        self._processor = TreeQueueProcessor(
+            queue_update_callback=queue_update_callback,
+            node_started_callback=node_started_callback,
+        )
         self._lock = asyncio.Lock()
 
         logger.info("TreeQueueManager initialized")
@@ -333,6 +339,15 @@ class TreeQueueManager:
         """Set callback for queue position updates."""
         self._processor.set_queue_update_callback(queue_update_callback)
 
+    def set_node_started_callback(
+        self,
+        node_started_callback: Optional[
+            Callable[[MessageTree, str], Awaitable[None]]
+        ],
+    ) -> None:
+        """Set callback for when a queued node starts processing."""
+        self._processor.set_node_started_callback(node_started_callback)
+
     def register_node(self, node_id: str, root_id: str) -> None:
         """Register a node ID to a tree (for external mapping)."""
         self._repository.register_node(node_id, root_id)
@@ -348,8 +363,14 @@ class TreeQueueManager:
         queue_update_callback: Optional[
             Callable[[MessageTree], Awaitable[None]]
         ] = None,
+        node_started_callback: Optional[
+            Callable[[MessageTree, str], Awaitable[None]]
+        ] = None,
     ) -> "TreeQueueManager":
         """Deserialize from dictionary."""
-        manager = cls(queue_update_callback=queue_update_callback)
+        manager = cls(
+            queue_update_callback=queue_update_callback,
+            node_started_callback=node_started_callback,
+        )
         manager._repository = TreeRepository.from_dict(data)
         return manager

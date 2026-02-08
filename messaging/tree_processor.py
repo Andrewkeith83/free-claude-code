@@ -24,8 +24,12 @@ class TreeQueueProcessor:
         queue_update_callback: Optional[
             Callable[[MessageTree], Awaitable[None]]
         ] = None,
+        node_started_callback: Optional[
+            Callable[[MessageTree, str], Awaitable[None]]
+        ] = None,
     ):
         self._queue_update_callback = queue_update_callback
+        self._node_started_callback = node_started_callback
 
     def set_queue_update_callback(
         self,
@@ -36,6 +40,15 @@ class TreeQueueProcessor:
         """Update the callback used to refresh queue positions."""
         self._queue_update_callback = queue_update_callback
 
+    def set_node_started_callback(
+        self,
+        node_started_callback: Optional[
+            Callable[[MessageTree, str], Awaitable[None]]
+        ],
+    ) -> None:
+        """Update the callback used when a queued node starts processing."""
+        self._node_started_callback = node_started_callback
+
     async def _notify_queue_updated(self, tree: MessageTree) -> None:
         """Invoke queue update callback if set."""
         if not self._queue_update_callback:
@@ -44,6 +57,15 @@ class TreeQueueProcessor:
             await self._queue_update_callback(tree)
         except Exception as e:
             logger.warning(f"Queue update callback failed: {e}")
+
+    async def _notify_node_started(self, tree: MessageTree, node_id: str) -> None:
+        """Invoke node started callback if set."""
+        if not self._node_started_callback:
+            return
+        try:
+            await self._node_started_callback(tree, node_id)
+        except Exception as e:
+            logger.warning(f"Node started callback failed: {e}")
 
     async def process_node(
         self,
@@ -103,8 +125,9 @@ class TreeQueueProcessor:
                     self.process_node(tree, node, processor)
                 )
 
-        # Queue positions changed after dequeue; refresh queued status messages.
+        # Notify that this node has started processing and refresh queue positions.
         if next_node_id:
+            await self._notify_node_started(tree, next_node_id)
             await self._notify_queue_updated(tree)
 
     async def enqueue_and_start(

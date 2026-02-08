@@ -170,6 +170,48 @@ async def test_update_queue_positions(handler, mock_platform):
 
 
 @pytest.mark.asyncio
+async def test_mark_node_processing(handler, mock_platform):
+    root_incoming = IncomingMessage(
+        text="Root",
+        chat_id="chat_1",
+        user_id="user_1",
+        message_id="root",
+        platform="telegram",
+    )
+    root = MessageNode(
+        node_id="root",
+        incoming=root_incoming,
+        status_message_id="status_root",
+    )
+    tree = MessageTree(root)
+
+    child_incoming = IncomingMessage(
+        text="Child",
+        chat_id="chat_1",
+        user_id="user_1",
+        message_id="child",
+        platform="telegram",
+        reply_to_message_id="root",
+    )
+
+    await tree.add_node(
+        node_id="child",
+        incoming=child_incoming,
+        status_message_id="status_child",
+        parent_id="root",
+    )
+
+    await handler._mark_node_processing(tree, "child")
+
+    mock_platform.queue_edit_message.assert_called_once()
+    args, kwargs = mock_platform.queue_edit_message.call_args
+    assert args[0] == "chat_1"
+    assert args[1] == "status_child"
+    assert "Processing" in args[2]
+    assert kwargs["parse_mode"] == "MarkdownV2"
+
+
+@pytest.mark.asyncio
 async def test_stop_all_tasks(handler, mock_cli_manager, mock_platform):
     mock_node = MagicMock()
     mock_node.incoming.chat_id = "chat_1"

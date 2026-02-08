@@ -170,3 +170,16 @@ async def test_process_next_triggers_queue_update(sample_tree):
     await processor._process_next(sample_tree, AsyncMock())
 
     callback.assert_awaited_once_with(sample_tree)
+
+
+@pytest.mark.asyncio
+async def test_process_next_triggers_node_started(sample_tree):
+    node_started = AsyncMock()
+    processor = TreeQueueProcessor(node_started_callback=node_started)
+
+    await sample_tree._queue.put("next_node")
+    sample_tree.get_node = MagicMock(return_value=None)
+
+    await processor._process_next(sample_tree, AsyncMock())
+
+    node_started.assert_awaited_once_with(sample_tree, "next_node")
