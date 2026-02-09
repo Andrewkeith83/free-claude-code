@@ -1,53 +1,11 @@
-# Environment variables
-.env
-
-# Python
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-.coverage
+__pycache__
+.claude
+.pytest_cache
 .ruff_cache
+.serena
+.venv
+agent_workspace
+.env
 AGENTS.MD
 CLAUDE.MD
-
-# Virtual environments
-venv/
-env/
-ENV/
-.venv/
-
-# Logs
-*.log
-*.jsonl
-
-# IDE specific files
-.idea/
-.vscode/
-*.swp
-*.swo
-.claude
-.serena
-
-# Claude Code CLI
-agent_workspace/
-*.session
-*-journal
+server.log
